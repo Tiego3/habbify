@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card max-w-3xl mx-auto">
+  <h2 class="text-xl font-semibold mb-2">{{ habit.name }} — History</h2>
+  <p class="muted mb-4">Last 30 days</p>
+
+  <div class="grid grid-cols-7 gap-2">
+    {% for d in series %}
+      <div class="p-3 rounded {{ 'bg-green-200' if d.completed else 'bg-gray-100' }} text-center">
+        <div class="text-xs">{{ d.date|date:"M j" }}</div>
+        <div class="text-sm font-medium">{{ d.completed|yesno:"✓,—" }}</div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <a href="{% url 'dashboard' %}" class="mt-4 inline-block muted">Back</a>
+</div>
+{% endblock %}

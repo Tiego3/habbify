@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Your Habits</h1>
+    <p class="muted">You completed <strong>{{ completed_today }}</strong> out of <strong>{{ total_habits }}</strong> today. 🌿</p>
+  </div>
+  <div>
+    <a href="{% url 'habit_create' %}" class="px-4 py-2 bg-indigo-500 text-white rounded-2xl">+ New Habit</a>
+  </div>
+</div>
+
+<div class="grid md:grid-cols-2 gap-4">
+  {% for habit in habits %}
+    <div class="card">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold">{{ habit.name }}</h3>
+          <p class="muted text-sm">{{ habit.category }} • {{ habit.frequency|title }}</p>
+          <p class="mt-2 text-sm">{{ habit.goal }}</p>
+          <div class="mt-3 flex items-center gap-3">
+            <!-- Toggle button with data-url for JS -->
+            <button 
+              data-url="{% url 'habit_toggle' habit.id %}" 
+              class="toggle-btn px-3 py-1 rounded-full border">
+              {% if habit.completed_today %} ✅ Done {% else %} Mark ✓ {% endif %}
+            </button>
+            <a class="text-sm muted" href="{% url 'habit_history' habit.id %}">History</a>
+            <a class="text-sm muted" href="{% url 'habit_edit' habit.id %}">Edit</a>
+            <a class="text-sm muted" href="{% url 'habit_delete' habit.id %}">Delete</a>
+          </div>
+        </div>
+        <div class="w-36">
+          <!-- Chart canvas with data-chart-url -->
+          <canvas 
+            id="chart-{{ habit.id }}" 
+            data-chart-url="{% url 'habit_chart_data' habit.id %}" 
+            width="160" height="160">
+          </canvas>
+          <p class="muted text-xs text-center mt-2">Streak: {{ habit.current_streak }}</p>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="muted">No habits yet — create one to get started.</p>
+  {% endfor %}
+</div>
+
+<!-- Linter-safe JS -->
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', () => {
+  // Toggle habit done
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', async function () {
+      const url = this.dataset.url;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      const data = await res.json();
+      this.textContent = data.completed ? '✅ Done' : 'Mark ✓';
+      location.reload();
+    });
+  });
+
+  // Render charts for each habit
+  document.querySelectorAll('canvas[data-chart-url]').forEach(canvas => {
+    const url = canvas.dataset.chartUrl;
+    fetch(url)
+      .then(r => r.json())
+      .then(json => {
+        new Chart(canvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: json.labels,
+            datasets: [{
+              label: json.name,
+              data: json.data,
+              borderRadius: 6,
+              barPercentage: 0.7
+            }]
+          },
+          options: {
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            plugins: { legend: { display: false } },
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+      });
+  });
+});
+
+// Helper to get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    document.cookie.split(';').forEach(cookie => {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+      }
+    });
+  }
+  return cookieValue;
+}
+</script>
+
+{% endblock %}
