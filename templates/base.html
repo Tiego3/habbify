@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Happify — Calm Habits</title>
+
+  <!-- Tailwind CDN (quick) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-sky-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-white/60 backdrop-blur-md shadow sticky top-0 z-20">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="{% url 'dashboard' %}" class="font-semibold text-lg">Happify</a>
+      <div class="flex items-center gap-4">
+        {% if user.is_authenticated %}
+          <span class="text-gray-500">Hi, {{ user.username }}</span>
+          <a class="text-sm text-indigo-600" href="{% url 'logout' %}?next={{ request.path }}">Logout</a>
+        {% else %}
+          <a class="text-sm text-indigo-600" href="{% url 'login' %}">Login</a>
+          <a class="text-sm text-indigo-600" href="{% url 'signup' %}">Sign up</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    {% if messages %}
+      <div class="space-y-2">
+        {% for m in messages %}
+          <div class="bg-white rounded-2xl shadow p-4 text-gray-700">
+            {{ m }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 text-center text-gray-500 text-sm pb-8">
+    Built with care • Lightweight • Local-first
+  </footer>
+</body>
+</html>
