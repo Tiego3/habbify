@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="card">
+    <h2 class="text-xl font-semibold mb-3">{% if object %}Edit Habit{% else %}New Habit{% endif %}</h2>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div>
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded">Save</button>
+        <a href="{% url 'dashboard' %}" class="ml-2 muted">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

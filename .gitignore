@@ -1,4 +1,5 @@
 # Python
+<<<<<<< HEAD
 __pycache__/
 *.py[cod]
 
@@ -9,10 +10,34 @@ venv/
 # Django
 db.sqlite3
 media/
+=======
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+
+# Database
+db.sqlite3
+
+# Django files
+*.log
+*.pot
+*.pyc
+*.mo
+>>>>>>> 179d9703121c71d7276805f9e534b6969d841fea
 
 # VS Code
 .vscode/
 
+<<<<<<< HEAD
 # OS
 .DS_Store
 Thumbs.db
+=======
+# macOS
+.DS_Store
+>>>>>>> 179d9703121c71d7276805f9e534b6969d841fea

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto card">
+  <h2 class="text-xl font-semibold">Delete habit?</h2>
+  <p class="muted">Are you sure you want to delete "{{ object.name }}"?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="px-3 py-1 bg-red-500 text-white rounded">Yes, delete</button>
+    <a href="{% url 'dashboard' %}" class="ml-2 muted">Cancel</a>
+  </form>
+</div>
+{% endblock %}
