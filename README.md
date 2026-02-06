@@ -22,14 +22,14 @@ Habbify is a comprehensive productivity platform that combines habit tracking, t
 - Completion tracking
 - Task filtering and search
 
-### 👤 User Management
+### User Management
 - Secure user authentication
 - User profiles and preferences
 - Personal dashboard
 - Activity history
 - Progress analytics
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Backend Framework**: Django (Python)
 - **Frontend**: HTML, CSS, JavaScript
@@ -37,7 +37,7 @@ Habbify is a comprehensive productivity platform that combines habit tracking, t
 - **Template Engine**: Django Templates
 
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 habbify/
@@ -55,7 +55,7 @@ habbify/
 └── asgi.py             # ASGI configuration
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
