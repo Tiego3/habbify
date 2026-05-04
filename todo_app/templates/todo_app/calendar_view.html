@@ -1,11 +1,22 @@
 <!-- todo_app/templates/todo_app/calendar_view.html -->
 {% extends "todo_app/base_with_sidebar.html" %}
 {% load static %}
-{% block title %}Calendar{% endblock %}
+{% block title %}Calendar — Habbify{% endblock %}
+
 {% block main_content %}
 <div class="calendar-container">
-    <!-- Calendar Header -->
+
+    <!-- Header / Nav -->
     <div class="calendar-header">
+        {% if view_mode == 'week' %}
+        <a class="nav-arrow" href="?view=week&offset={{ prev_offset }}">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        <h2 class="calendar-month">{{ week_label }}</h2>
+        <a class="nav-arrow" href="?view=week&offset={{ next_offset }}">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+        {% else %}
         <button class="nav-arrow" id="prev-month">
             <i class="fa-solid fa-chevron-left"></i>
         </button>
@@ -13,11 +24,41 @@
         <button class="nav-arrow" id="next-month">
             <i class="fa-solid fa-chevron-right"></i>
         </button>
+        {% endif %}
+
+        <!-- View toggle -->
+        <div class="view-toggle">
+            <a href="?view=week" class="view-btn {% if view_mode == 'week' %}active{% endif %}">Week</a>
+            <a href="?view=month" class="view-btn {% if view_mode == 'month' %}active{% endif %}">Month</a>
+        </div>
     </div>
-    
-    <!-- Calendar Grid -->
+
+    {% if view_mode == 'week' %}
+    <!-- ===== WEEK VIEW ===== -->
+    <div class="week-grid">
+        {% for day in week_days %}
+        <div class="week-day {% if day.is_today %}today{% endif %}">
+            <div class="week-day-header">
+                <span class="week-day-name">{{ day.day_short }}</span>
+                <span class="week-day-num {% if day.is_today %}today-num{% endif %}">{{ day.day_num }}</span>
+                <span class="week-day-month">{{ day.month_name }}</span>
+            </div>
+            <div class="week-day-tasks">
+                {% for task in day.tasks %}
+                <div class="task-pill {% if task.is_overdue %}overdue{% elif task.is_completed %}completed{% else %}active{% endif %}">
+                    {{ task.title|truncatechars:20 }}
+                </div>
+                {% empty %}
+                <span class="week-empty"></span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- ===== MONTH VIEW ===== -->
     <div class="calendar-grid">
-        <!-- Day Headers -->
         <div class="calendar-day-header">Sun</div>
         <div class="calendar-day-header">Mon</div>
         <div class="calendar-day-header">Tue</div>
@@ -25,13 +66,11 @@
         <div class="calendar-day-header">Thu</div>
         <div class="calendar-day-header">Fri</div>
         <div class="calendar-day-header">Sat</div>
-        
-        <!-- Calendar Days -->
+
         {% for week in calendar_weeks %}
             {% for day in week %}
             <div class="calendar-day {% if day.is_today %}today{% endif %} {% if not day.in_month %}other-month{% endif %}">
                 <span class="day-number">{{ day.day }}</span>
-                
                 {% if day.tasks %}
                 <div class="day-tasks">
                     {% for task in day.tasks %}
@@ -45,78 +84,49 @@
             {% endfor %}
         {% endfor %}
     </div>
-    
+    {% endif %}
+
     <!-- Legend -->
     <div class="calendar-legend">
-        <div class="legend-item">
-            <span class="legend-dot active"></span>
-            <span>Active Task</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-dot completed"></span>
-            <span>Completed</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-dot overdue"></span>
-            <span>Overdue</span>
-        </div>
+        <div class="legend-item"><span class="legend-dot active"></span><span>Active</span></div>
+        <div class="legend-item"><span class="legend-dot completed"></span><span>Completed</span></div>
+        <div class="legend-item"><span class="legend-dot overdue"></span><span>Overdue</span></div>
     </div>
 </div>
 
-<!-- Hidden data attributes for JavaScript -->
-<div id="calendar-data" 
-     data-current-month="{{ current_month_num }}" 
-     data-current-year="{{ current_year }}" 
-     style="display: none;">
-</div>
+<!-- Hidden data for month-nav JS -->
+{% if view_mode == 'month' %}
+<div id="calendar-data"
+     data-current-month="{{ current_month_num }}"
+     data-current-year="{{ current_year }}"
+     style="display:none;"></div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
+{% if view_mode == 'month' %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const prevBtn = document.getElementById('prev-month');
-    const nextBtn = document.getElementById('next-month');
-    const calendarData = document.getElementById('calendar-data');
-    
-    // Get current month and year from data attributes
-    const defaultMonth = parseInt(calendarData.dataset.currentMonth);
-    const defaultYear = parseInt(calendarData.dataset.currentYear);
-    
-    prevBtn.addEventListener('click', function() {
-        const currentUrl = new URL(window.location);
-        const month = parseInt(currentUrl.searchParams.get('month') || defaultMonth);
-        const year = parseInt(currentUrl.searchParams.get('year') || defaultYear);
-        
-        let newMonth = month - 1;
-        let newYear = year;
-        
-        if (newMonth < 1) {
-            newMonth = 12;
-            newYear--;
-        }
-        
-        currentUrl.searchParams.set('month', newMonth);
-        currentUrl.searchParams.set('year', newYear);
-        window.location = currentUrl.toString();
-    });
-    
-    nextBtn.addEventListener('click', function() {
-        const currentUrl = new URL(window.location);
-        const month = parseInt(currentUrl.searchParams.get('month') || defaultMonth);
-        const year = parseInt(currentUrl.searchParams.get('year') || defaultYear);
-        
-        let newMonth = month + 1;
-        let newYear = year;
-        
-        if (newMonth > 12) {
-            newMonth = 1;
-            newYear++;
-        }
-        
-        currentUrl.searchParams.set('month', newMonth);
-        currentUrl.searchParams.set('year', newYear);
-        window.location = currentUrl.toString();
-    });
+    const data = document.getElementById('calendar-data');
+    const defaultMonth = parseInt(data.dataset.currentMonth);
+    const defaultYear = parseInt(data.dataset.currentYear);
+
+    function navigate(delta) {
+        const url = new URL(window.location);
+        let month = parseInt(url.searchParams.get('month') || defaultMonth);
+        let year = parseInt(url.searchParams.get('year') || defaultYear);
+        month += delta;
+        if (month < 1) { month = 12; year--; }
+        if (month > 12) { month = 1; year++; }
+        url.searchParams.set('month', month);
+        url.searchParams.set('year', year);
+        url.searchParams.set('view', 'month');
+        window.location = url.toString();
+    }
+
+    document.getElementById('prev-month').addEventListener('click', () => navigate(-1));
+    document.getElementById('next-month').addEventListener('click', () => navigate(1));
 });
 </script>
+{% endif %}
 {% endblock %}

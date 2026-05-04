@@ -1,0 +1,65 @@
+<!-- todo_app/templates/todo_app/partials/habit_card.html -->
+<div id="habit-card-{{ habit.id }}" class="habit-card-new {% if habit.is_completed_today %}completed-today{% endif %}">
+
+    <!-- Toggle button -->
+    <button
+        class="habit-check-box {% if habit.is_completed_today %}completed{% endif %}"
+        hx-post="{% url 'toggle_habit' habit.id %}"
+        hx-target="#habit-card-{{ habit.id }}"
+        hx-swap="outerHTML"
+        title="{% if habit.is_completed_today %}Mark incomplete{% else %}Mark complete{% endif %}"
+    >
+        {% if habit.is_completed_today %}
+        <i class="fa-solid fa-circle-check"></i>
+        {% else %}
+        <i class="fa-regular fa-circle"></i>
+        {% endif %}
+    </button>
+
+    <!-- Info -->
+    <div class="habit-info">
+        <div class="habit-name">{{ habit.title }}</div>
+        <div class="habit-streak-info">
+            <span class="streak-count">
+                <i class="fa-solid fa-fire"></i> {{ habit.get_streak }} day streak
+            </span>
+            <span class="habit-freq">{{ habit.get_frequency_display }}</span>
+        </div>
+
+        <!-- 14-day grid for daily; 4-week for weekly; 3-month for monthly -->
+        <div class="streak-grid">
+            {% if habit.frequency == 'daily' %}
+                {% for day in habit.last_14_days %}
+                <span
+                    class="streak-square {% if day.completed %}streak-square--filled{% endif %} {% if day.is_today %}streak-square--today{% endif %}"
+                    title="{{ day.date|date:'M j' }}"
+                ></span>
+                {% endfor %}
+            {% elif habit.frequency == 'weekly' %}
+                {% for week in habit.last_4_weeks %}
+                <span
+                    class="streak-square {% if week.completed %}streak-square--filled{% endif %} {% if week.is_current %}streak-square--today{% endif %}"
+                    title="Week {{ week.week_num }}"
+                ></span>
+                {% endfor %}
+            {% elif habit.frequency == 'monthly' %}
+                {% for month in habit.last_3_months %}
+                <span
+                    class="streak-square {% if month.completed %}streak-square--filled{% endif %} {% if month.is_current %}streak-square--today{% endif %}"
+                    title="{{ month.month_name }}"
+                ></span>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Delete -->
+    <div class="task-actions">
+        <form method="POST" action="{% url 'delete_habit' habit.id %}" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="action-icon action-icon--delete" aria-label="Delete habit">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </form>
+    </div>
+</div>

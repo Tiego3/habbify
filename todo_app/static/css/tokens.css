@@ -1,0 +1,115 @@
+/* ============================================================
+   tokens.css — design tokens only. No selectors except :root and
+   the dark-mode override. Import this BEFORE components.css.
+   ============================================================ */
+
+:root {
+  /* ---- Spacing (4pt scale, named by literal pixel value) ---- */
+  --space-4:  4px;
+  --space-8:  8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* ---- Color (light, warm-neutral) ---- */
+  --color-bg:             #FAFAF9;
+  --color-surface:        #FFFFFF;
+  --color-surface-hover:  #F5F4F1;
+  --color-border:         #EBEAE7;
+  --color-border-strong:  #D8D6D1;
+
+  --color-text:           #1C1B1A;
+  --color-text-muted:     #6B6A66;
+  --color-text-subtle:    #A19F99;
+
+  --color-accent:         #4F46E5;
+  --color-accent-hover:   #4338CA;
+  --color-accent-soft:    #EEF0FF;
+  --color-on-accent:      #FFFFFF;
+
+  --color-success:        #5C8A6F;
+  --color-success-soft:   #ECF2EE;
+  --color-warning:        #C8852C;
+  --color-warning-soft:   #FBF1E2;
+  --color-danger:         #B83A3A;
+  --color-danger-soft:    #FAEAEA;
+
+  /* ---- Typography ---- */
+  --font-sans:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Inter", system-ui, sans-serif; /* swap to Instrument Serif or Fraunces if going editorial */
+
+  --text-sm:   14px;  /* secondary body, button labels, tags */
+  --text-base: 16px;  /* primary body, inputs */
+  --text-lg:   20px;  /* section / page headings */
+
+  --weight-regular:  400;
+  --weight-semibold: 600;
+
+  --leading-tight:  1.25;
+  --leading-normal: 1.5;
+
+  /* ---- Radius ---- */
+  --radius-sm:   4px;    /* tags, small inputs */
+  --radius-md:   6px;    /* buttons, inputs, checkboxes */
+  --radius-lg:   12px;   /* cards, modals */
+  --radius-pill: 999px;  /* status indicators only */
+
+  /* ---- Focus ring (single source of truth) ---- */
+  --ring: 0 0 0 3px color-mix(in srgb, var(--color-accent) 35%, transparent);
+
+  /* ---- Motion ---- */
+  --ease:          cubic-bezier(0.2, 0, 0, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+}
+
+/* Dark mode — toggle by setting `data-theme="dark"` on <html> or <body> */
+[data-theme="dark"] {
+  --color-bg:             #0F0F0E;
+  --color-surface:        #1A1A19;
+  --color-surface-hover:  #232321;
+  --color-border:         #2A2A28;
+  --color-border-strong:  #3A3A37;
+
+  --color-text:           #F5F4F1;
+  --color-text-muted:     #A19F99;
+  --color-text-subtle:    #6B6A66;
+
+  --color-accent:         #818CF8;
+  --color-accent-hover:   #A5AEF9;
+  --color-accent-soft:    #1F1F3A;
+  --color-on-accent:      #0F0F0E;
+
+  --color-success:        #7BA88D;
+  --color-success-soft:   #1A2620;
+  --color-warning:        #DDA15E;
+  --color-warning-soft:   #2A2218;
+  --color-danger:         #D26565;
+  --color-danger-soft:    #2A1818;
+}
+
+/* Minimal global base. Not a full reset — Django's admin and form
+   widgets already expect normal browser defaults. Keep this small. */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  font-feature-settings: "ss01", "cv11", "tnum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

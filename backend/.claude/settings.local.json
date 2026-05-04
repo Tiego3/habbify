@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vite\")",
+      "Bash(python *)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

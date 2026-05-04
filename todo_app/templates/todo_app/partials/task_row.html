@@ -1,0 +1,68 @@
+<!-- todo_app/templates/todo_app/partials/task_row.html -->
+<div id="task-row-{{ task.id }}" class="task-card {% if task.is_completed %}task-card--done{% endif %} {% if task.is_overdue and not task.is_completed %}task-card--overdue{% endif %}">
+
+    <!-- Checkbox with optimistic animation -->
+    <label class="task-checkbox-label" title="{% if task.is_completed %}Mark incomplete{% else %}Mark complete{% endif %}">
+        <input
+            type="checkbox"
+            class="task-checkbox"
+            {% if task.is_completed %}checked{% endif %}
+            hx-patch="{% url 'toggle_task' task.id %}"
+            hx-target="#task-row-{{ task.id }}"
+            hx-swap="outerHTML"
+            hx-indicator="#task-row-{{ task.id }}"
+        >
+        <span class="task-checkbox-ui"></span>
+    </label>
+
+    <div class="task-content">
+        <div class="task-header">
+            <h3 class="task-title {% if task.is_completed %}task-title--done{% endif %}">{{ task.title }}</h3>
+            <div class="task-badges">
+                {% if task.priority == 1 %}
+                <span class="priority-dot priority-dot--high" title="High priority"></span>
+                {% elif task.priority == 2 %}
+                <span class="priority-dot priority-dot--medium" title="Medium priority"></span>
+                {% endif %}
+
+                {% if task.is_overdue and not task.is_completed %}
+                <span class="overdue-badge">
+                    <i class="fa-solid fa-circle-exclamation"></i> Overdue
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if task.description %}
+        <p class="task-description">{{ task.description }}</p>
+        {% endif %}
+
+        <div class="task-meta">
+            {% if task.due_date %}
+            <span class="meta-item {% if task.is_overdue and not task.is_completed %}meta-item--overdue{% endif %}">
+                <i class="fa-regular fa-calendar"></i>
+                {{ task.due_date|date:"M j, Y" }}
+            </span>
+            {% endif %}
+            {% if task.due_time %}
+            <span class="meta-item">
+                <i class="fa-regular fa-clock"></i>
+                {{ task.due_time|time:"g:i A" }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions revealed on hover -->
+    <div class="task-actions">
+        <button
+            class="action-icon action-icon--delete"
+            aria-label="Delete task"
+            hx-delete="{% url 'delete_task' task.id %}"
+            hx-target="#task-row-{{ task.id }}"
+            hx-swap="delete"
+        >
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    </div>
+</div>

@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
-from django.views.decorators.http import require_POST
+from django.db.models import Count
+from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib import messages
 from django.utils import timezone
 from django.http import JsonResponse
@@ -112,10 +112,7 @@ class HabitForm:
 def landing_view(request):
     """Landing page explaining the app."""
     if request.user.is_authenticated:
-        profile = UserProfile.objects.filter(user=request.user).first()
-        if profile and profile.onboarding_completed:
-            return redirect('dashboard')
-        return redirect('onboarding_welcome')
+        return redirect('dashboard')
     
     return render(request, 'todo_app/landing.html')
 
@@ -134,6 +131,7 @@ def register_view(request):
                 email=data['email'],
                 password=data['password']
             )
+            UserProfile.objects.create(user=user)
             login(request, user)
             messages.success(request, 'Account created successfully!')
             return redirect('onboarding_welcome')
@@ -186,8 +184,8 @@ def onboarding_welcome(request):
         if custom_name:
             profile.custom_name = custom_name
             profile.save()
-            return redirect('onboarding_preference')
-    
+            return redirect('onboarding_habits')
+
     return render(request, 'todo_app/onboarding_welcome.html')
 
 
@@ -237,7 +235,7 @@ def onboarding_habits(request):
         # Create welcome notification
         Notification.objects.create(
             user=request.user,
-            title="Welcome to TaskFlow! 🎉",
+            title="Welcome to Habbify! 🎉",
             message=f"Hey {profile.custom_name}! You're all set up. Let's crush those goals together!",
             notification_type='system'
         )
@@ -254,39 +252,31 @@ def onboarding_habits(request):
 @login_required
 def dashboard_view(request):
     """Main tasks dashboard with proper tab filtering."""
-    profile = get_object_or_404(UserProfile, user=request.user)
-    
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
     if not profile.onboarding_completed:
         return redirect('onboarding_welcome')
     
-    # Get all tasks
-    all_tasks = Task.objects.filter(user=request.user)
-    
+    # Get all non-deleted tasks (single DB hit — split in Python to avoid N+1)
+    all_tasks = Task.objects.filter(user=request.user, deleted_at__isnull=True)
+
     # Filter by status
     active_tasks = all_tasks.filter(is_completed=False).order_by('priority', 'due_date')
     completed_tasks = all_tasks.filter(is_completed=True).order_by('-completed_at')
-    
-    # Needs Attention: Overdue OR High priority incomplete tasks
-    attention_tasks = active_tasks.filter(
-        Q(due_date__lt=date.today()) | Q(priority=1)
-    ).distinct()
     
     context = {
         'user_name': profile.custom_name,
         'all_tasks': all_tasks,
         'active_tasks': active_tasks,
         'completed_tasks': completed_tasks,
-        'attention_tasks': attention_tasks,
         'active_count': active_tasks.count(),
         'completed_count': completed_tasks.count(),
-        'needs_attention_count': attention_tasks.count(),
         'priorities': PRIORITY_CHOICES,
     }
     return render(request, 'todo_app/dashboard.html', context)
 
 
 # --- HABITS VIEW  ---
-@login_required
 @login_required
 def habits_view(request):
     """Habits dashboard with correct frequency-based progress tracking."""
@@ -296,7 +286,7 @@ def habits_view(request):
         return redirect('onboarding_welcome')
 
     today = date.today()
-    user_habits = Habit.objects.filter(user=request.user, is_active=True)
+    user_habits = Habit.objects.filter(user=request.user, is_active=True).prefetch_related('logs')
 
     # Total streak
     total_streak = sum(h.get_streak() for h in user_habits)
@@ -321,12 +311,16 @@ def habits_view(request):
 
         habits_with_progress.append(habit)
 
+    total = user_habits.count()
+    completion_rate = round(len(habits_completed_today) / total * 100) if total > 0 else 0
+
     context = {
         'user_name': profile.custom_name,
         'user_habits': habits_with_progress,
         'total_streak': total_streak,
         'habits_completed_today': habits_completed_today,
-        'total_habits': user_habits.count(),
+        'total_habits': total,
+        'completion_rate': completion_rate,
         'habit_frequencies': HABIT_FREQUENCY,
     }
     return render(request, 'todo_app/habits_view.html', context)
@@ -343,46 +337,82 @@ def calendar_view(request):
         return redirect('onboarding_welcome')
     
     today = date.today()
+    view_mode = request.GET.get('view', 'week')  # 'week' is default
+
+    # --- Week view ---
+    if view_mode == 'week':
+        week_offset = int(request.GET.get('offset', 0))
+        week_start = today - timedelta(days=today.weekday()) + timedelta(weeks=week_offset)
+        week_end = week_start + timedelta(days=6)
+
+        week_tasks = Task.objects.filter(
+            user=request.user,
+            due_date__range=[week_start, week_end],
+            deleted_at__isnull=True,
+        )
+        tasks_by_date = {}
+        for task in week_tasks:
+            tasks_by_date.setdefault(task.due_date, []).append(task)
+
+        week_days = []
+        for i in range(7):
+            d = week_start + timedelta(days=i)
+            week_days.append({
+                'date': d,
+                'day_name': d.strftime('%A'),
+                'day_short': d.strftime('%a'),
+                'day_num': d.day,
+                'month_name': d.strftime('%b'),
+                'is_today': d == today,
+                'tasks': tasks_by_date.get(d, []),
+            })
+
+        context = {
+            'user_name': profile.custom_name,
+            'view_mode': 'week',
+            'week_days': week_days,
+            'week_start': week_start,
+            'week_end': week_end,
+            'week_offset': week_offset,
+            'prev_offset': week_offset - 1,
+            'next_offset': week_offset + 1,
+            'week_label': f"{week_start.strftime('%b %d')} – {week_end.strftime('%b %d, %Y')}",
+        }
+        return render(request, 'todo_app/calendar_view.html', context)
+
+    # --- Month view ---
     month = int(request.GET.get('month', today.month))
     year = int(request.GET.get('year', today.year))
-    
     month_name = calendar.month_name[month]
     cal = monthcalendar(year, month)
-    
-    # Get all tasks for this month
+
     month_tasks = Task.objects.filter(
         user=request.user,
         due_date__year=year,
-        due_date__month=month
+        due_date__month=month,
+        deleted_at__isnull=True,
     )
-    
-    # Build calendar with tasks
+
     calendar_weeks = []
     for week in cal:
         calendar_week = []
         for day_num in week:
             if day_num == 0:
-                calendar_week.append({
-                    'day': '',
-                    'in_month': False,
-                    'is_today': False,
-                    'tasks': []
-                })
+                calendar_week.append({'day': '', 'in_month': False, 'is_today': False, 'tasks': []})
             else:
                 day_date = date(year, month, day_num)
-                day_tasks = month_tasks.filter(due_date=day_date)
-                
                 calendar_week.append({
                     'day': day_num,
                     'in_month': True,
                     'is_today': day_date == today,
-                    'tasks': day_tasks,
-                    'date': day_date
+                    'tasks': [t for t in month_tasks if t.due_date == day_date],
+                    'date': day_date,
                 })
         calendar_weeks.append(calendar_week)
-    
+
     context = {
         'user_name': profile.custom_name,
+        'view_mode': 'month',
         'current_month': month_name,
         'current_year': year,
         'current_month_num': month,
@@ -404,20 +434,23 @@ def settings_view(request):
             primary = request.POST.get('primary_color', profile.primary_color)
             secondary = request.POST.get('secondary_color', profile.secondary_color)
             accent = request.POST.get('accent_color', profile.accent_color)
-            
+            theme_mode = request.POST.get('theme_mode')
+
             # Validate hex colors
             import re
             hex_pattern = re.compile(r'^#[0-9A-Fa-f]{6}$')
-            
+
             if hex_pattern.match(primary):
                 profile.primary_color = primary
             if hex_pattern.match(secondary):
                 profile.secondary_color = secondary
             if hex_pattern.match(accent):
                 profile.accent_color = accent
-            
+            if theme_mode in ['light', 'dark', 'night']:
+                profile.theme_mode = theme_mode
+
             profile.save()
-            messages.success(request, 'Colors applied successfully!')
+            messages.success(request, 'Settings applied successfully!')
             return redirect('settings_view')
         
         # Handle reset to default
@@ -438,7 +471,6 @@ def settings_view(request):
 
 
 @login_required
-@csrf_exempt
 def update_theme_ajax(request):
     """AJAX endpoint for live theme updates."""
     if request.method == 'POST':
@@ -508,26 +540,65 @@ def add_task(request):
 @login_required
 @require_POST
 def complete_task(request, task_id):
-    """Toggle task completion."""
-    task = get_object_or_404(Task, pk=task_id, user=request.user)
+    """Toggle task completion (legacy form-based endpoint)."""
+    task = get_object_or_404(Task, pk=task_id, user=request.user, deleted_at__isnull=True)
     task.is_completed = not task.is_completed
-    if task.is_completed:
-        task.completed_at = timezone.now()
-    else:
-        task.completed_at = None
+    task.completed_at = timezone.now() if task.is_completed else None
     task.save()
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
 
 
 @login_required
-@require_POST
+@require_http_methods(['PATCH'])
+def toggle_task(request, task_id):
+    """HTMX: toggle completion, return updated task row partial."""
+    task = get_object_or_404(Task, pk=task_id, user=request.user, deleted_at__isnull=True)
+    task.is_completed = not task.is_completed
+    task.completed_at = timezone.now() if task.is_completed else None
+    task.save()
+    return render(request, 'todo_app/partials/task_row.html', {'task': task})
+
+
+@login_required
+@require_http_methods(['DELETE'])
 def delete_task(request, task_id):
-    """Delete a task."""
+    """HTMX: soft-delete a task, return empty body + OOB toast."""
+    task = get_object_or_404(Task, pk=task_id, user=request.user, deleted_at__isnull=True)
+    task.deleted_at = timezone.now()
+    task.save()
+    return render(request, 'todo_app/partials/delete_toast.html', {'task': task})
+
+
+@login_required
+@require_POST
+def restore_task(request, task_id):
+    """HTMX: undo soft-delete, redirect to dashboard."""
     task = get_object_or_404(Task, pk=task_id, user=request.user)
-    title = task.title
-    task.delete()
-    messages.success(request, f'Task "{title}" deleted.')
-    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+    task.deleted_at = None
+    task.save()
+    from django.http import HttpResponse
+    response = HttpResponse()
+    response['HX-Redirect'] = '/dashboard/'
+    return response
+
+
+@login_required
+@require_http_methods(['POST'])
+def toggle_habit(request, habit_id):
+    """HTMX: toggle today's habit completion, return updated habit card partial."""
+    habit = get_object_or_404(Habit, pk=habit_id, user=request.user)
+    today = date.today()
+    log, created = HabitLog.objects.get_or_create(
+        habit=habit, log_date=today,
+        defaults={'is_completed': True, 'completion_count': 1, 'completed_at': timezone.now()}
+    )
+    if not created:
+        log.is_completed = not log.is_completed
+        if log.is_completed:
+            log.completion_count += 1
+            log.completed_at = timezone.now()
+        log.save()
+    return render(request, 'todo_app/partials/habit_card.html', {'habit': habit})
 
 
 # --- HABIT CRUD  ---
@@ -620,43 +691,3 @@ def get_time_of_day():
     elif 12 <= hour < 17:
         return "afternoon"
     return "evening"
-
-
-# view
-@login_required
-@csrf_exempt
-def update_theme_ajax(request):
-    """AJAX endpoint for live theme updates."""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            profile = request.user.profile
-            
-            theme_mode = data.get('theme_mode')
-            if theme_mode in ['light', 'dark', 'night']:
-                profile.theme_mode = theme_mode
-            
-            primary = data.get('primary_color')
-            secondary = data.get('secondary_color')
-            accent = data.get('accent_color')
-            
-            if primary and primary.startswith('#') and len(primary) == 7:
-                profile.primary_color = primary
-            if secondary and secondary.startswith('#') and len(secondary) == 7:
-                profile.secondary_color = secondary
-            if accent and accent.startswith('#') and len(accent) == 7:
-                profile.accent_color = accent
-            
-            profile.save()
-            
-            return JsonResponse({
-                'success': True,
-                'theme_mode': profile.theme_mode,
-                'primary_color': profile.primary_color,
-                'secondary_color': profile.secondary_color,
-                'accent_color': profile.accent_color
-            })
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)

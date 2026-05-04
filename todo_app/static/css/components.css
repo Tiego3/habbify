@@ -1,0 +1,227 @@
+/* ============================================================
+   components.css — uses tokens only. No raw pixel values
+   (except sub-token sizes like icon strokes), no raw hex.
+   Requires tokens.css to be loaded first.
+   ============================================================ */
+
+/* ---- Buttons ----
+   .btn         = base shape + ghost-ish neutral default
+   .btn-primary = accent fill (use for ONE primary action per screen)
+   .btn-ghost   = no border, no fill — for tertiary actions in dense rows
+*/
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+
+  height: 40px;
+  padding: 0 var(--space-16);
+
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+
+  transition:
+    background   var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease),
+    color        var(--duration-fast) var(--ease);
+}
+
+.btn:hover  { background: var(--color-surface-hover); }
+.btn:active { transform: translateY(1px); }
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-color: transparent;
+}
+.btn-primary:hover { background: var(--color-accent-hover); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-text-muted);
+}
+.btn-ghost:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+/* ---- Input ----
+   Works for <input>, <select>. For <textarea>, add `class="input"`
+   plus the textarea-specific overrides below.
+*/
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-12);
+
+  font-family: inherit;
+  font-size: var(--text-base);
+  color: var(--color-text);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  transition:
+    border-color var(--duration-fast) var(--ease),
+    box-shadow   var(--duration-fast) var(--ease);
+}
+
+.input::placeholder { color: var(--color-text-subtle); }
+.input:hover        { border-color: var(--color-border-strong); }
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: var(--ring);
+}
+
+.input[aria-invalid="true"],
+.input.is-invalid {
+  border-color: var(--color-danger);
+}
+
+textarea.input {
+  height: auto;
+  min-height: 80px;
+  padding: var(--space-12);
+  line-height: var(--leading-normal);
+  resize: vertical;
+}
+
+/* ---- Card ---- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-16);
+}
+
+.card-lg { padding: var(--space-24); }
+
+/* ---- Tag (priority/status indicator) ----
+   Default tag is a neutral outlined chip with a colored dot prefix.
+   Variants tint the whole chip — use sparingly, mostly for priority.
+*/
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  height: 22px;
+  padding: 0 var(--space-8);
+
+  font-size: 12px;          /* deliberately below --text-sm; tags are subordinate */
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: 0.01em;
+
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
+.tag-high {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-color: transparent;
+}
+.tag-medium {
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+  border-color: transparent;
+}
+.tag-low {
+  color: var(--color-success);
+  background: var(--color-success-soft);
+  border-color: transparent;
+}
+
+/* ---- Checkbox ----
+   Custom-styled native checkbox. The checkmark uses a CSS mask so it
+   inherits --color-on-accent and works correctly in dark mode without
+   a second SVG copy.
+*/
+.checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+
+  transition:
+    background   var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+
+.checkbox:hover { border-color: var(--color-accent); }
+
+.checkbox:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.checkbox:checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  animation: checkbox-pop var(--duration-base) var(--ease);
+}
+
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-on-accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='3,7.5 6,10.5 11,4.5'/%3E%3C/svg%3E") center / 14px no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='3,7.5 6,10.5 11,4.5'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+
+@keyframes checkbox-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ---- Utility: vertical rhythm for forms ---- */
+.stack > * + * { margin-top: var(--space-12); }
+.stack-lg > * + * { margin-top: var(--space-24); }

@@ -1,312 +1,214 @@
 # Habbify
 
-A Django-based habit tracking and productivity application that helps users build better habits, manage tasks, and track their personal growth journey.
+A productivity platform that combines **task management**, **habit tracking**, and **personal analytics** in one place. Built with Django and React, Habbify helps you build streaks, stay organized, and understand your productivity patterns.
 
-## Overview
+![Python](https://img.shields.io/badge/Python-3.11-blue) ![Django](https://img.shields.io/badge/Django-5.2-green) ![React](https://img.shields.io/badge/React-19-61DAFB) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-Habbify is a comprehensive productivity platform that combines habit tracking, todo management, and user analytics into a single, cohesive application. Built with Django, it provides users with the tools they need to establish positive routines, complete tasks efficiently, and visualize their progress over time.
+---
 
 ## Features
 
-### Habit Tracking
-- Create and manage custom habits
-- Set frequency goals (daily, weekly, monthly)
-- Track habit completion with streaks
-- Visual progress indicators
-- Habit statistics and insights
+- **Task Management** — Create, prioritize, and track one-off tasks with due dates and reminders. Soft-delete with restore support.
+- **Habit Tracking** — Build daily, weekly, monthly, or custom-frequency habits. Visual 14-day, 4-week, and 3-month progress grids.
+- **Streaks & Achievements** — Consecutive completion tracking with milestone badges (Week Warrior at 7 days, Month Master at 30).
+- **Calendar View** — See all your tasks laid out by date in a monthly calendar.
+- **Personalized Onboarding** — Morning / evening / anytime productivity preference setup on first login.
+- **Theme System** — Light, dark, and night modes with custom primary, secondary, and accent color pickers.
+- **Notifications** — In-app alerts for tasks, habits, and earned achievements.
 
-### Todo Management
-- Create, update, and delete tasks
-- Priority levels and due dates
-- Task categorization
-- Completion tracking
-- Task filtering and search
+---
 
-### User Management
-- Secure user authentication
-- User profiles and preferences
-- Personal dashboard
-- Activity history
-- Progress analytics
+## Tech Stack
 
-## Technology Stack
+| Layer | Technology |
+|-------|-----------|
+| Backend | Django 5.2, Python 3.11 |
+| Database | SQLite (dev) / PostgreSQL (prod) |
+| Templates | Django Templates + HTMX |
+| Frontend SPA | React 19, Vite, TailwindCSS |
+| State Management | Zustand |
+| Charts | Recharts |
+| HTTP Client | Axios |
+| Testing | Pytest, pytest-django |
+| Linting | Ruff |
+| CI/CD | GitHub Actions |
 
-- **Backend Framework**: Django (Python)
-- **Frontend**: HTML, CSS, JavaScript
-- **Database**: SQLite (development) / PostgreSQL (production ready)
-- **Template Engine**: Django Templates
-
+---
 
 ## Project Structure
 
 ```
 habbify/
-├── habits/              # Habit tracking app
-├── todo_app/            # Todo/task management app
-├── users/              # User authentication and profiles
-├── happify/            # Main project configuration
-├── todo_project/       # Additional todo project settings
-├── templates/          # Global HTML templates
-├── static/             # CSS, JavaScript, and images
-├── manage.py           # Django management script
-├── settings.py         # Django settings
-├── urls.py             # URL routing configuration
-├── wsgi.py             # WSGI configuration
-└── asgi.py             # ASGI configuration
+├── apps/
+│   └── todo_app/               # Main Django app
+│       ├── models.py           # Task, Habit, HabitLog, UserProfile, Notification, Achievement
+│       ├── views.py
+│       ├── urls.py
+│       ├── admin.py
+│       ├── tests.py
+│       ├── static/             # CSS, JS, images
+│       └── templates/          # Django HTML templates
+├── backend/                    # Microservices backend (in progress)
+│   ├── habits/
+│   ├── tasks/
+│   ├── users/
+│   ├── ai/
+│   └── insights/
+├── config/
+│   └── settings/
+│       ├── base.py             # Shared settings
+│       ├── dev.py              # Development overrides
+│       └── prod.py             # Production overrides
+├── frontend/                   # React SPA (Vite)
+│   └── src/
+│       ├── pages/              # Dashboard, Habits, Calendar, Insights, etc.
+│       ├── components/         # Sidebar, BottomNav, Modals, HabitRing
+│       ├── api/                # Axios API clients
+│       └── hooks/              # useAuth, useTheme
+├── .github/
+│   └── workflows/ci.yml
+├── manage.py
+├── requirements.txt
+└── pytest.ini
 ```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- pip (Python package manager)
-- Virtual environment (recommended)
+- Python 3.11+
+- Node.js 18+ *(only needed for the React SPA)*
 
-### Installation
+### Backend Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Tiego3/habbify.git
-   cd habbify
-   ```
-
-2. **Create and activate virtual environment**
-   ```bash
-   # Windows
-   python -m venv venv
-   venv\Scripts\activate
-
-   # macOS/Linux
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-   
-   If `requirements.txt` doesn't exist, install Django:
-   ```bash
-   pip install django
-   ```
-
-4. **Run database migrations**
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-
-5. **Create a superuser (admin)**
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-6. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
-
-7. **Access the application**
-   - Main site: `http://127.0.0.1:8000/`
-   - Admin panel: `http://127.0.0.1:8000/admin/`
-
-## Usage
-
-### Creating Habits
-1. Register or log in to your account
-2. Navigate to the Habits section
-3. Click "Create New Habit"
-4. Set habit name, description, frequency, and goals
-5. Start tracking your progress daily
-
-### Managing Tasks
-1. Go to the Todo section
-2. Add new tasks with priority and due dates
-3. Mark tasks as complete when done
-4. Filter tasks by status, priority, or category
-
-### Viewing Progress
-1. Access your Dashboard
-2. View habit streaks and completion rates
-3. Analyze task completion statistics
-4. Track your productivity trends over time
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory with:
-
-```env
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-DATABASE_URL=sqlite:///db.sqlite3
-```
-
-### Database Configuration
-
-For PostgreSQL (production):
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'habbify_db',
-        'USER': 'your_db_user',
-        'PASSWORD': 'your_db_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
-## Testing
-
-Run the test suite:
 ```bash
-python manage.py test
+# 1. Clone the repo
+git clone https://github.com/Tiego3/habbify.git
+cd habbify
+
+# 2. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate        # macOS / Linux
+venv\Scripts\activate           # Windows
+
+# 3. Install Python dependencies
+pip install -r requirements.txt
+
+# 4. Apply database migrations
+python manage.py migrate
+
+# 5. (Optional) Create an admin superuser
+python manage.py createsuperuser
+
+# 6. Start the dev server
+python manage.py runserver
 ```
 
-Run tests for specific apps:
+App available at `http://127.0.0.1:8000/` — admin at `/admin/`.
+
+### Frontend Setup *(optional React SPA)*
+
+The Django templates work standalone. The React SPA proxies API calls to Django on port 8000.
+
 ```bash
-python manage.py test habits
-python manage.py test todo_app
-python manage.py test users
+cd frontend
+npm install
+npm run dev       # http://localhost:5173
+npm run build     # Production build
 ```
-
-## Database Models
-
-### Habit Model
-- `name`: Habit title
-- `description`: Detailed description
-- `frequency`: Daily/Weekly/Monthly
-- `target_count`: Goal frequency
-- `created_at`: Creation timestamp
-- `user`: Foreign key to User
-
-### Todo Model
-- `title`: Task title
-- `description`: Task details
-- `priority`: Low/Medium/High
-- `due_date`: Deadline
-- `completed`: Boolean status
-- `user`: Foreign key to User
-
-### User Profile Model
-- Extends Django's built-in User model
-- Additional fields for preferences
-- Statistics tracking
-- Activity history
-
-## Security Considerations
-
-- User authentication required for all personal data
-- CSRF protection enabled
-- Password hashing with Django's built-in system
-- SQL injection protection through ORM
-- XSS protection through template escaping
-
-## Potential Future Updates
-
-### Short-term Enhancements (v2.0)
-- **Dark Mode**: Implement theme switching for better user experience
-- **Mobile Responsiveness**: Optimize layouts for mobile devices
-- **Habit Categories**: Add ability to categorize habits (Health, Productivity, Fitness, etc.)
-- **Reminders & Notifications**: Email/push notifications for habit tracking and task deadlines
-- **Data Export**: Allow users to export their data (CSV, JSON, PDF reports)
-
-### Medium-term Features (v3.0)
-- **Social Features**: 
-  - Share habits with friends
-  - Community challenges
-  - Accountability partners
-  - Public/private habit sharing
-- **Gamification**:
-  - Achievement badges
-  - Points and rewards system
-  - Leaderboards
-  - Streak milestones
-- **Advanced Analytics**:
-  - Weekly/monthly reports
-  - Habit correlation analysis
-  - Productivity heatmaps
-  - Time-of-day performance insights
-- **Calendar Integration**: Sync with Google Calendar, Outlook
-- **API Development**: RESTful API for mobile app integration
-
-### Long-term Vision (v4.0+)
-- **Mobile Applications**: Native iOS and Android apps
-- **AI-Powered Insights**:
-  - Personalized habit recommendations
-  - Optimal scheduling suggestions
-  - Predictive analytics for habit success
-  - Smart reminders based on user behavior
-- **Advanced Task Management**:
-  - Recurring tasks
-  - Subtasks and dependencies
-  - Project management features
-  - Time tracking integration
-- **Collaboration Tools**:
-  - Team habits
-  - Shared todo lists
-  - Group challenges
-  - Progress sharing
-- **Integration Ecosystem**:
-  - Fitness tracker integration (Fitbit, Apple Health)
-  - Productivity apps (Todoist, Trello)
-  - Smart home devices (Alexa, Google Home)
-  - Pomodoro timer integration
-- **Premium Features**:
-  - Unlimited habits
-  - Advanced reporting
-  - Custom themes
-  - Priority support
-  - Ad-free experience
-
-### Technical Improvements
-- **Performance Optimization**:
-  - Database query optimization
-  - Caching implementation (Redis)
-  - CDN for static files
-  - Database indexing
-- **Architecture Enhancements**:
-  - Migrate to Django REST Framework for API
-  - Implement Celery for background tasks
-  - WebSocket support for real-time updates
-  - Microservices architecture consideration
-- **DevOps**:
-  - Docker containerization
-  - CI/CD pipeline setup
-  - Automated testing suite expansion
-  - Infrastructure as Code (Terraform/Ansible)
-- **Monitoring & Logging**:
-  - Application performance monitoring (APM)
-  - Error tracking (Sentry)
-  - User analytics (Google Analytics, Mixpanel)
-  - Log aggregation (ELK Stack)
-
-### UI/UX Improvements
-- Progressive Web App (PWA) capabilities
-- Drag-and-drop task management
-- Keyboard shortcuts
-- Customizable dashboard layouts
-- Accessibility improvements (WCAG compliance)
-- Multi-language support (i18n)
-
-## Roadmap
-
-- [x] Basic habit tracking
-- [x] Todo list functionality
-- [x] User authentication
-- [ ] Mobile responsive design
-- [ ] Dark mode
-- [ ] Email notifications
-- [ ] Social features
-- [ ] Mobile apps
-- [ ] API development
 
 ---
 
-**Happy Habit Building! 🎯**
+## Configuration
+
+Settings are split by environment under `config/settings/`.
+
+| File | Purpose |
+|------|---------|
+| `base.py` | Shared config (installed apps, middleware, templates) |
+| `dev.py` | DEBUG=True, SQLite, debug toolbar |
+| `prod.py` | Reads secrets from env, enforces HTTPS/HSTS |
+
+`manage.py` defaults to `config.settings.dev`. Override for production:
+
+```bash
+DJANGO_SETTINGS_MODULE=config.settings.prod python manage.py runserver
+```
+
+### Production Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `DJANGO_SECRET_KEY` | Required — Django secret key |
+| `ALLOWED_HOSTS` | Comma-separated allowed domains |
+| `DATABASE_URL` | PostgreSQL URL, e.g. `postgres://user:pass@host/db` |
+
+---
+
+## Data Models
+
+| Model | Description |
+|-------|-------------|
+| `UserProfile` | Extends User — theme, color preferences, onboarding state |
+| `Task` | One-off to-dos with priority, due date, soft-delete |
+| `Habit` | Recurring habits (daily / weekly / monthly / quarterly / custom) |
+| `HabitLog` | Daily completion records used for streak calculation |
+| `Achievement` | Earned badges: "Week Warrior" (7 days), "Month Master" (30 days) |
+| `Notification` | In-app alerts for tasks, habits, achievements, and system events |
+
+---
+
+## Running Tests
+
+```bash
+# All tests
+pytest
+
+# Verbose output
+pytest -v
+
+# Specific class
+pytest -k "TestHabitModel"
+
+# Short traceback, quiet output
+pytest --tb=short -q
+```
+
+Tests cover streak calculation, soft-delete/restore, overdue detection, and database query efficiency (single-query assertions for progress grids).
+
+---
+
+## CI/CD
+
+GitHub Actions runs on every push and pull request:
+
+1. Ubuntu latest, Python 3.11
+2. Install dependencies from `requirements.txt`
+3. Lint with `ruff check .`
+4. Run tests with `pytest --tb=short -q`
+
+See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+---
+
+## Roadmap
+
+- [x] Task management with priority and soft-delete
+- [x] Habit tracking with daily / weekly / monthly frequency
+- [x] Streak tracking and achievement badges
+- [x] Calendar view
+- [x] Theme system (light / dark / night + custom colors)
+- [x] Personalized onboarding flow
+- [x] GitHub Actions CI pipeline
+- [ ] AI-powered habit suggestions
+- [ ] Insights and productivity analytics
+- [ ] React SPA — full feature parity with Django templates
+- [ ] Public REST API (DRF + JWT)
+- [ ] Mobile app (React Native)
+- [ ] Email and push reminders
+
+---
+
+

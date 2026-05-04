@@ -6,11 +6,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-<<<<<<< HEAD
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'todo_project.settings')
-=======
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'happify.settings')
->>>>>>> 179d9703121c71d7276805f9e534b6969d841fea
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.dev')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -23,8 +19,4 @@ def main():
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     main()
-=======
-    main()
->>>>>>> 179d9703121c71d7276805f9e534b6969d841fea

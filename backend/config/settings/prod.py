@@ -1,0 +1,16 @@
+from .base import *  # noqa: F401,F403
+import os
+
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+DEBUG = False
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+CORS_ALLOW_CREDENTIALS = True
+
+ANTHROPIC_API_KEY = os.environ['ANTHROPIC_API_KEY']
+
+SECURE_HSTS_SECONDS = 31536000
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

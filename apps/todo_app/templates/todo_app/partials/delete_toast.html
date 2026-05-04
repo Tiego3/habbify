@@ -1,0 +1,32 @@
+<!-- todo_app/templates/todo_app/partials/delete_toast.html -->
+<!-- OOB: swapped into #toast-container after delete -->
+<div
+    id="toast-container"
+    hx-swap-oob="afterbegin"
+>
+    <div
+        class="undo-toast"
+        x-data="{ show: false }"
+        x-init="$nextTick(() => { show = true; setTimeout(() => show = false, 5000) })"
+        x-show="show"
+        x-transition:enter="toast-enter"
+        x-transition:enter-start="toast-enter-start"
+        x-transition:enter-end="toast-enter-end"
+        x-transition:leave="toast-leave"
+        x-transition:leave-start="toast-leave-start"
+        x-transition:leave-end="toast-leave-end"
+    >
+        <span class="undo-toast__msg">
+            <i class="fa-solid fa-trash-can"></i>
+            "{{ task.title }}" deleted
+        </span>
+        <button
+            class="undo-toast__btn"
+            hx-post="{% url 'restore_task' task.id %}"
+            hx-swap="none"
+            @click="show = false"
+        >
+            Undo
+        </button>
+    </div>
+</div>

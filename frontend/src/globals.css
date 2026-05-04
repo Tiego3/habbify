@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg:      #F5F0E8;
+    --color-surface: #EDE8DC;
+    --color-border:  #D4CFC4;
+    --color-text:    #2C3329;
+    --color-muted:   #6B7A65;
+    --color-accent:  #7D9B76;
+    --color-warm:    #A8906A;
+    --color-danger:  #A0522D;
+    --radius-md:     10px;
+    --radius-lg:     16px;
+  }
+
+  [data-theme="dark"] {
+    --color-bg:      #1A1F1C;
+    --color-surface: #242B26;
+    --color-border:  #3A4A3C;
+    --color-text:    #E8EDE5;
+    --color-muted:   #8FAF8A;
+    --color-accent:  #7D9B76;
+    --color-warm:    #C4956A;
+  }
+
+  html {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  body {
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border p-4;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+    background-color: var(--color-accent);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background-color: #5E7D58;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+    color: var(--color-muted);
+  }
+  .btn-ghost:hover {
+    background-color: var(--color-border);
+  }
+
+  .input {
+    @apply w-full rounded-md px-3 py-2 text-sm outline-none transition-shadow;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+  .input:focus {
+    box-shadow: 0 0 0 2px var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .badge-high   { @apply text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700; }
+  .badge-medium { @apply text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700; }
+  .badge-low    { @apply text-xs font-medium px-2 py-0.5 rounded-full bg-sage-100 text-sage-700; }
+}
